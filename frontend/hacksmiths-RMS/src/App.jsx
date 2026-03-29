@@ -1,6 +1,7 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import Landing from './pages/Landing';
 import Signup from './pages/Signup';
+import Login from './pages/Login';
 
 function App() {
   return (
@@ -8,7 +9,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/signup" element={<Signup />} />
-        <Route path="/" element={<Login />} />
+        <Route path="/login" element={<Login />} />
         {/* Fallback: redirect any unknown route to landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>
