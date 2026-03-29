@@ -7,6 +7,7 @@ import json
 from flask_cors import CORS
 from dotenv import load_dotenv
 from ocr_engine import process_receipt_image
+from werkzeug.utils import secure_filename
 
 load_dotenv(".env")
 
@@ -54,6 +55,7 @@ def admin_register():
     companyCode = company if len(company) <= 3 else company[:3]
     companyCode = companyCode.upper()
     
+    os.makedirs(f"company/{companyCode}", exist_ok=True)
     
     try:
         user = auth.create_user(
@@ -225,6 +227,64 @@ def add_member():
         return jsonify({"message": f"{role.upper()} created successfully", "uid": user.uid}), 201
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
+@app.route("/submit-reimbursement", methods=["POST"])
+def submit_reimbursement():
+    data = request.form
+    employee_uid = data.get("employee_uid")
+    title = data.get("title")
+    company = data.get("company").upper()
+    amount = data.get("amount")
+    curr_type = data.get("currency")
+    date = data.get("date")
+    category = data.get("category")
+    paid_by = data.get("paid_by")
+    description = data.get("description")
+    approver_uid = data.get("approver_uid")
+    
+    
+    try:
+        if "receipt" not in request.files:
+            return jsonify({"error": "No file part"}), 400
+
+        file = request.files["receipt"]
+
+        if file.filename == "":
+            return jsonify({"error": "No selected file"}), 400
+
+        filename = secure_filename(file.filename)
+        
+        dir_path = os.path.join("company", company[:3], employee_uid)
+        os.makedirs(dir_path, exist_ok=True)
+
+        filepath = os.path.join(dir_path, filename)
+        file.save(filepath)
+    
+        reimbursement_data = {
+            "employee_uid": employee_uid,
+            "approver_uid": approver_uid,
+            "amount": amount,
+            "date": date,
+            "currency": curr_type,
+            "category": category,
+            "paid_by": paid_by,
+            "title": title,
+            "receipt_path": filepath,
+            "description": description,
+            "status": "pending"
+        }
+        
+        new_reimbursement_ref = ref.child(company).child("reimbursements").push(reimbursement_data)
+        
+        ref.child(company).child("employee").child(employee_uid).child("reimbursements").push(new_reimbursement_ref.key)
+        
+        ref.child(company).child("manager").child(approver_uid).child("reimbursements_req").push(new_reimbursement_ref.key)
+        
+        return jsonify({"message": "Reimbursement submitted successfully"}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 
 if __name__ == "__main__":
     app.run(debug=True)
