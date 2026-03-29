@@ -2,6 +2,7 @@ import easyocr
 import cv2
 import numpy as np
 import re
+from flask import jsonify
 
 # Initialize Reader
 reader = easyocr.Reader(['en'])
@@ -17,39 +18,29 @@ def process_receipt_image(image_bytes):
     
     # Run OCR 
     results = reader.readtext(gray)
+    
     if not results:
         return None
 
-    # Combine all detected text for regex searching
+    # Extraction Logic
     full_text = " ".join([res[1] for res in results])
     
-    # Finds decimal numbers (e.g., 450.00 or 1,200.50)
+    # Amount Extraction
     amounts = re.findall(r'\d+(?:[.,]\d{2})', full_text)
     clean_amounts = [float(a.replace(',', '')) for a in amounts]
-    
-    # Usually, the largest number on a receipt is the Total Amount
     total = max(clean_amounts) if clean_amounts else 0.0
 
-    # Supports DD/MM/YYYY, MM-DD-YYYY, etc.
+    # Date Extraction
     date_match = re.search(r'\b\d{1,2}[/-]\d{1,2}[/-]\d{2,4}\b', full_text)
     date_val = date_match.group(0) if date_match else "Not Found"
 
-    # patterns to ignore table headers text
-    ignore_patterns = [r'expected', r'value', r'example', r'field', r'vendor', r'name', r'details', r'test']
-    
+    # Vendor Detection (Skipping headers like 'Expected Value')
+    ignore_patterns = [r'expected', r'value', r'example', r'field', r'vendor', r'name']
     vendor_name = "Unknown Vendor"
     for res in results:
-        original_text = res[1].strip()
-        text_to_check = original_text.lower()
-        
-        if len(text_to_check) < 3:
-            continue
-            
-        # If the text contains any 'ignore' words, skip to the next result
-        is_forbidden = any(re.search(pattern, text_to_check) for pattern in ignore_patterns)
-        
-        if not is_forbidden:
-            vendor_name = original_text
+        text = res[1].strip()
+        if not any(re.search(p, text.lower()) for p in ignore_patterns) and len(text) > 2:
+            vendor_name = text
             break
 
     return {
@@ -58,3 +49,8 @@ def process_receipt_image(image_bytes):
         "vendor": vendor_name,
         "description": f"Auto-generated expense from {vendor_name}"
     }
+
+    # return {
+    #     "raw_results": [res[1] for res in results] 
+    # }
+    # want full response use this 
