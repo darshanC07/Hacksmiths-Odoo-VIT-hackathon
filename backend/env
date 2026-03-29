@@ -1,0 +1,13 @@
+type = "service_account"
+project_id = "hacksmiths-rms"
+private_key_id = "1169bb3849588055b859fff3bfefa807dd429f1a"
+private_key = "-----BEGIN PRIVATE KEY-----\nMIIEvgIBADANBgkqhkiG9w0BAQEFAASCBKgwggSkAgEAAoIBAQCse2IwZ1TQyC1A\npaUM3fGyexpGtTXaDtPRbl8IQLXjJScrJLeUox5WbEukIDTZffVHwLnbrzEq0tq6\n/81FodvyHtswWF5XqW/aEKGqXySg++NK50CKnNawG9A5i4LCwrfCKYKoOreMSleX\n1Pkd4cv7Tu+wKv5RYL+unEpOYJo9Q32A27jfO/WLUguJuhjXJZ10CVCJwlNXIjqG\nB2sw89KeHzdbFaC8ezVTSYduU3IyjSmbhMIvU8tDC7w16dLGv3NEvc0MMbE7OF8T\nzOsXZhSwtnNdc+S4lcpF2g7OuK+4LGP1K52xaiiG9Yw24jZDPL6uxqtGvrUkSahi\nkxtUHuLzAgMBAAECggEAGWxmYLQacFvRL8I6vdbJFYHHsbxsH6Qn3KrkHxdKuBx1\n1Yon9STGB/8Wdy64G4bRbK4ftx3vpVxHGWEzJJxjCyE5NbsQzOMQtZfV/ILhp0j5\ni8TiYowTqQmwe4rwzzxcUaZEt/9PpsIefybJQXpS0swj0FfF/MDCAD7RRRRAJ99Y\nwcp5CK+i2/bj3C9yiLerpohG3RCSaRJXFU+tMJsIxBkdSJwbgVT2+SY6t15irWEh\nTMK5VfeNEw8n7x8M9mJtw2ONmZXq5D7i8SOKGrg2Fdz3RcGMWzpxNFutFzZI5zIV\nwM3eIrszplzyCiwEjVGZCs8jdaJi5q722cZMpgUtoQKBgQDf+Il3k8G9p4ZFprVo\n/Arlt7VmNKVu8lf1ppWr6GGHJrODpR0FzqovDOzJtU1K8qYeEvJJOAfVBPhpvc6d\nBNjude6gmTQZ4D1naErFoZnsxnxcHNJMsQXBLRIIEStlkUP4c+uDHPXpZojnddAn\nDhye2TS1wEH4npU84Zd+mnWY9wKBgQDFJd0m0Os7FJ4XASRPY0LiL1geWE7VgnON\ntPgzPpnkB4lYtq0gj+Jmrr6WJA8cBPglj3Y4SQCeS75wg5TmiMfGDugqFj/v6uMI\nNLfN8mWg6q0TQhfxy2JWFm0JUGJa3IURpI9RJ/n18Tyc7upymp7XvZvB4X7yxJ8t\nrxBuSXXi5QKBgFs8entMpIqmmKr86z92FNZZTLryzUVx0WUPVD8wLbKJkG0bMMRx\n2J/MCxVsFq1mRUdQ/oPXIFGlcbBZkrYiCGCzh97CKhg0Ya8jK/pwBy0N+hDn6L83\nCZoUyxigLeZ1E5Q9XH4PqRlIHJL1SjLuq7gF0VQMmpM1vqOLXlRDhY4nAoGBALMu\nEq2wu9rahkSKOSIeKS/Br+kEgcHz6mokzGBmyR9C6kXC4d7yZubEc1uqMkFZEt+w\nX9YQI4u7c753GOHd9xO/gKqfxkSbyvQuVc/MOynhoKQcMf8Exr9PapJIiNvkCN1c\nHxW3q6soMdrAGj1G4o9aOTIhbGvg4Ht43QofohExAoGBAL5RLWLHFrxXMYLZC2Te\nBCaECYZtWPVtLcmggWUj3hGmJaly+A3+9DVDo9kJaf2FrsopKSMoTFsBTnfKiypF\n3UTNn6DE/B1yo1X2C/+wAmSY3sNCQ6jdvmj5YBXA9NXZOPhD1hPWjR1Fq28q/VZ5\ngo4YS9pzolANQWa+x8dfEOLj\n-----END PRIVATE KEY-----\n"
+client_email = "firebase-adminsdk-fbsvc@hacksmiths-rms.iam.gserviceaccount.com"
+client_id = "110471522011861960682"
+auth_uri = "https://accounts.google.com/o/oauth2/auth"
+token_uri = "https://oauth2.googleapis.com/token"
+auth_provider_x509_cert_url ="https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/firebase-adminsdk-fbsvc%40hacksmiths-rms.iam.gserviceaccount.com"
+universe_domain = "googleapis.com"
+apiKey="AIzaSyDiEp2P5WzpG5rtPSEp8EfF-dZnqe_d8oM"
+DATABASE_URL = "https://hacksmiths-rms-default-rtdb.firebaseio.com/"
