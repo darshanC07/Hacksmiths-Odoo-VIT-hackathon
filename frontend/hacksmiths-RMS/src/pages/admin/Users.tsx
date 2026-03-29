@@ -251,6 +251,13 @@ const AdminUsers: React.FC = () => {
     (user?.email || '').toLowerCase().includes(searchTerm.toLowerCase())
   );
 
+  const getManagerName = (managerId: string) => {
+    if (!managerId || managerId === '-') return '-';
+    // Find the manager object inside the full user list
+    const mgr = users.find((u) => u.uid === managerId && u.role === 'Manager');
+    return mgr ? mgr.name : managerId;
+  };
+
   return (
     <div className="admin-layout">
       {/* Reusing Sidebar */}
@@ -288,7 +295,7 @@ const AdminUsers: React.FC = () => {
                   <th>Email</th>
                   <th>Role</th>
                   <th>Manager</th>
-                  <th>Status</th>
+                  <th>Password</th>
                   <th>Actions</th>
                 </tr>
               </thead>
@@ -299,11 +306,22 @@ const AdminUsers: React.FC = () => {
                       <td className="td-name">{user.name}</td>
                       <td>{user.email}</td>
                       <td>{user.role}</td>
-                      <td>{user.manager || '-'}</td>
+                      <td>{getManagerName(user.manager || user.manager_uid)}</td>
                       <td>
-                        <span className={`status-badge status-badge--${(user.status || 'Active').toLowerCase()}`}>
-                          {user.status || 'Active'}
-                        </span>
+                        <button 
+                          className="action-btn" 
+                          style={{ 
+                            padding: '6px 12px', 
+                            background: 'rgba(108, 92, 231, 0.1)', 
+                            color: '#6C5CE7', 
+                            border: '1px solid rgba(108, 92, 231, 0.2)', 
+                            borderRadius: '6px',
+                            fontWeight: '500'
+                          }}
+                          onClick={() => alert(`Password reset link sent to ${user.email}!`)}
+                        >
+                          Send Password
+                        </button>
                       </td>
                       <td>
                         <button className="action-btn">Edit</button>
