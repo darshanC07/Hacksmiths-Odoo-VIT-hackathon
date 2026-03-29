@@ -1,14 +1,16 @@
 import { useState, ChangeEvent, FormEvent, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import "./Login.css";
+import { loginUser } from "../Global Api/globalApi";
 
 const Login = () => {
   const [formData, setFormData] = useState({
     email: "",
     password: "",
+    company: "",
   });
   
-  const [errors, setErrors] = useState<{ email?: string; password?: string }>({});
+  const [errors, setErrors] = useState<{ email?: string; password?: string; company?: string }>({});
   const [showPass, setShowPass] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
@@ -24,7 +26,8 @@ const Login = () => {
   }, [location]);
 
   const validate = () => {
-    const errs: { email?: string; password?: string } = {};
+    const errs: { email?: string; password?: string; company?: string } = {};
+    if (!formData.company.trim()) errs.company = "Company ID is required";
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(formData.email)) errs.email = "Enter a valid email address";
     if (!formData.password) errs.password = "Password is required";
     return errs;
@@ -38,17 +41,42 @@ const Login = () => {
     }
   };
 
-  const handleSubmit = (e: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (e: FormEvent<HTMLFormElement>) => {
     e.preventDefault();
     const errs = validate();
     if (Object.keys(errs).length > 0) {
       setErrors(errs);
       return;
     }
-    console.log("Login form data:", { ...formData, role });
-    // TODO: Connect to backend. For now, navigate to admin dashboard as a test if role is Admin, or something similar
-    if (role === 'Admin') {
-      navigate('/admin');
+    
+    try {
+      const res = await loginUser({
+        email: formData.email,
+        password: formData.password,
+        company: formData.company,
+        role: role.toLowerCase()
+      });
+
+      if (res.code === 200 || res.message === "Login successful!") {
+        // Save dynamically inputted Company directly to local storage
+        localStorage.setItem("company", formData.company.toLowerCase());
+        localStorage.setItem("uid", res.user?.uid || "");
+        localStorage.setItem("role", role.toLowerCase());
+        
+        // Redirect to appropriate dashboard perfectly
+        if (role === 'Admin') {
+          navigate('/admin');
+        } else if (role === 'Employee') {
+          navigate('/employee');
+        } else {
+          navigate('/');
+        }
+      } else {
+        alert("Login failed! Invalid credentials.");
+      }
+    } catch (err: any) {
+      console.error("Login API Error:", err);
+      alert(err.response?.data?.error || err.response?.data?.message || "Failed to login securely.");
     }
   };
 
@@ -88,6 +116,28 @@ const Login = () => {
         <p className="login-subtitle">Sign in to your {role} account</p>
 
         <form className="login-form" onSubmit={handleSubmit} noValidate>
+          {/* Company ID */}
+          <div className={`form-group${errors.company ? " form-group--error" : ""}`}>
+            <label htmlFor="company">Company Code</label>
+            <div className="input-wrapper">
+              <span className="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <path d="M3 9l9-7 9 7v11a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2z" />
+                  <polyline points="9 22 9 12 15 12 15 22" />
+                </svg>
+              </span>
+              <input
+                id="company"
+                name="company"
+                type="text"
+                placeholder="e.g. ethdc"
+                value={formData.company}
+                onChange={handleChange}
+              />
+            </div>
+            {errors.company && <span className="error-msg">{errors.company}</span>}
+          </div>
+
           {/* Email */}
           <div className={`form-group${errors.email ? " form-group--error" : ""}`}>
             <label htmlFor="email">Email Address</label>

@@ -197,7 +197,7 @@ const AdminUsers: React.FC = () => {
 
   const handleAddUser = async (e: React.FormEvent) => {
     e.preventDefault();
-    const company = localStorage.getItem("company") || "Acme Corp";
+    const company = localStorage.getItem("company") || "ethdc";
     
     try {
       if (formData.role === 'Manager') {
@@ -239,9 +239,10 @@ const AdminUsers: React.FC = () => {
         role: 'Employee',
         manager: '',
       });
-    } catch (err) {
+    } catch (err: any) {
       console.error("Add member API failed:", err);
-      alert("Failed to save user via API! Please check if your backend is running or see console for errors.");
+      const backendError = err?.response?.data?.error || err?.response?.data?.message || err.message;
+      alert(`Failed! Backend Error: ${backendError}`);
     }
   };
 
