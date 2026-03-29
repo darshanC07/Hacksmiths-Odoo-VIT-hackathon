@@ -41,5 +41,93 @@ active_users = {}
 def main():
     return jsonify({"message": "Hello, World!"}),200
 
+@app.route("/admin-register", methods=["POST"])
+def admin_register():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+    name = data.get("name")
+    company = data.get("company")
+    country = data.get("country")
+    
+    companyCode = company if len(company) <= 3 else company[:3]
+    companyCode = companyCode.upper()
+    
+    
+    try:
+        user = auth.create_user(
+            uid = f"{companyCode}_ADMIN",
+            email=email,
+            password=password
+        )
+        print(f"Successfully created new user: {user.uid}")
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={API_KEY}"
+        payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+        }
+        response = requests.post(url, json=payload)
+        
+        userData = {
+            "email": email,
+            "uid": user.uid,
+            "name": name,
+            "company": company,
+            "country": country,
+        }
+        print(response.json())
+        if response.status_code == 200:
+            ref.child(company).child("admin").set(userData)
+            return jsonify({"message": "ADMIN created successfully", "uid": user.uid}), 201
+        else:
+            auth.delete_user(user.uid)
+            return jsonify({"error": "Failed to authenticate user after creation"}), 400
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route("/login", methods=["POST"])
+def login():
+    data = request.get_json()
+    email = data.get("email")
+    password = data.get("password")
+    role = data.get("role")
+    company = data.get("company").upper()
+    
+    try :
+        url = f"https://identitytoolkit.googleapis.com/v1/accounts:signInWithPassword?key={API_KEY}"
+        payload = {
+            "email": email,
+            "password": password,
+            "returnSecureToken": True
+        }
+        response = requests.post(url, json=payload)
+        if response.status_code == 200:
+            user = auth.get_user_by_email(email)
+            print("logged in ",user.uid)
+            if role == "admin":
+                user_info  = ref.child(company).child("admin").get()
+                print("found : ",user_info)
+            elif role == "employee":
+                user_info  = ref.child(company).child("employee").child(user.uid).get()
+            elif role == "manager":
+                user_info  = ref.child(company).child("manager").child(user.uid).get()
+            print(user_info)
+            print(type(user_info))
+            if not user_info:
+                return jsonify({"error": "USER_NOT_FOUND"}), 404
+            
+            return jsonify({"message": "Login successful!",
+                            "code": 200, 
+                            "user": {
+                                'email': user.email,
+                                'uid': user.uid,
+                                'name': user_info.get("name",f"{role.upper}_USER"),
+            }})
+        else:
+            return jsonify({"error": "Invalid credentials"}), 401
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 if __name__ == "__main__":
     app.run(debug=True)
