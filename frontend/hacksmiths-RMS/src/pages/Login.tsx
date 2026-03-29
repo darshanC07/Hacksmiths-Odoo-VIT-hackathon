@@ -147,12 +147,14 @@ const Login = () => {
           </button>
         </form>
 
-        <div className="login-signup-link">
-          <span>Don't have an account?</span>
-          <button className="text-link-btn" onClick={() => navigate("/signup")}>
-            Sign Up
-          </button>
-        </div>
+        {role === 'Admin' && (
+          <div className="login-signup-link">
+            <span>Don't have an account?</span>
+            <button className="text-link-btn" onClick={() => navigate("/signup")}>
+              Sign Up
+            </button>
+          </div>
+        )}
       </div>
     </div>
   );

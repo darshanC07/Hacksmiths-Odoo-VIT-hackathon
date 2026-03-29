@@ -104,18 +104,7 @@ const Landing: React.FC = () => {
           ))}
         </div>
 
-        <div className="landing-divider">
-          <span>New to the platform?</span>
-        </div>
 
-        <p className="landing-signup-text">Don&apos;t have an account?</p>
-        <button
-          id="signup-btn"
-          className="signup-btn"
-          onClick={() => navigate('/signup')}
-        >
-          Sign Up
-        </button>
       </div>
     </div>
   );

@@ -1,11 +1,13 @@
 import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
+import { registerAdmin } from '../Global Api/globalApi';
 import './Signup.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
 
 interface CountryOption {
   name: string;        // common name, e.g. "India"
+  code: string;        // country cca2 code, e.g. "IN"
   currency: string;    // currency code, e.g. "INR"
   currencyName: string; // full name, e.g. "Indian rupee"
 }
@@ -60,7 +62,7 @@ const Signup: React.FC = () => {
   useEffect(() => {
     const fetchCountries = async () => {
       try {
-        const res = await fetch('https://restcountries.com/v3.1/all?fields=name,currencies');
+        const res = await fetch('https://restcountries.com/v3.1/all?fields=name,currencies,cca2');
         const data = await res.json();
 
         const parsed: CountryOption[] = data
@@ -70,6 +72,7 @@ const Signup: React.FC = () => {
             const currencyInfo = c.currencies[currencyCode];
             return {
               name: c.name.common,
+              code: c.cca2,
               currency: currencyCode,
               currencyName: currencyInfo?.name ?? currencyCode,
             };
@@ -110,11 +113,11 @@ const Signup: React.FC = () => {
 
   // When country changes → auto-fill currency
   const handleCountryChange = (e: ChangeEvent<HTMLSelectElement>): void => {
-    const selectedName = e.target.value;
-    const found = countries.find((c) => c.name === selectedName);
+    const selectedCode = e.target.value;
+    const found = countries.find((c) => c.code === selectedCode);
     setFormData((prev) => ({
       ...prev,
-      country: selectedName,
+      country: selectedCode,
       currency: found ? found.currency : '',
     }));
     if (errors.country) setErrors((prev) => ({ ...prev, country: undefined }));
@@ -127,13 +130,23 @@ const Signup: React.FC = () => {
       setErrors(errs);
       return;
     }
-    // No API call — log full data including country & currency
-    console.log('Signup form data:', {
-      ...formData,
-      country: formData.country,
-      currency: formData.currency,
-    });
-    setSubmitted(true);
+    
+    try {
+      registerAdmin({
+        email: formData.email,
+        password: formData.password,
+        company: formData.companyName,
+        country: formData.country,
+        name: formData.fullName
+      }).then(() => {
+        console.log('Admin registered successfully');
+        setSubmitted(true);
+      }).catch(err => {
+        console.error('Registration failed:', err);
+      });
+    } catch(err) {
+      console.error(err);
+    }
   };
 
   // ── Success state ────────────────────────────────────────────────────────────
@@ -340,7 +353,7 @@ const Signup: React.FC = () => {
                   {countriesLoading ? 'Loading countries…' : 'Select country…'}
                 </option>
                 {countries.map((c) => (
-                  <option key={c.name} value={c.name}>
+                  <option key={c.code} value={c.code}>
                     {c.name}
                   </option>
                 ))}
