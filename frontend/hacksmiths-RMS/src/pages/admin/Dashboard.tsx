@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import './Dashboard.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -192,12 +193,19 @@ const StatCardItem: React.FC<StatCardProps> = ({ card }) => (
 
 const AdminDashboard: React.FC = () => {
   const [activeNav, setActiveNav] = useState<NavItem>('dashboard');
+  const navigate = useNavigate();
+
+  const handleNavSelect = (item: NavItem) => {
+    setActiveNav(item);
+    if (item === 'dashboard') navigate('/admin');
+    if (item === 'users') navigate('/admin/users');
+  };
 
   return (
     <div className="admin-layout">
       <Sidebar
         active={activeNav}
-        onSelect={setActiveNav}
+        onSelect={handleNavSelect}
       />
 
       <main className="admin-main">
