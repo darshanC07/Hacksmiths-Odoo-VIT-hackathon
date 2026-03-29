@@ -8,6 +8,7 @@ function App() {
       <Routes>
         <Route path="/" element={<Landing />} />
         <Route path="/signup" element={<Signup />} />
+        <Route path="/" element={<Login />} />
         {/* Fallback: redirect any unknown route to landing */}
         <Route path="*" element={<Navigate to="/" replace />} />
       </Routes>

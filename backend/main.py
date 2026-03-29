@@ -6,6 +6,7 @@ import requests
 import json
 from flask_cors import CORS
 from dotenv import load_dotenv
+from ocr_engine import process_receipt_image
 
 load_dotenv(".env")
 
@@ -128,6 +129,42 @@ def login():
             return jsonify({"error": "Invalid credentials"}), 401
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+    
+
+@app.route("/scan", methods=["POST"])
+def scan_receipt():
+    """
+    OCR Endpoint for Employees to scan receipts.
+    Auto-generates: Amount, Date, Vendor, and Description.
+    """
+    # Check if the file part is in the request
+    if 'file' not in request.files:
+        return jsonify({"error": "No file part"}), 400
+    
+    file = request.files['file']
+    
+    if file.filename == '':
+        return jsonify({"error": "No selected file"}), 400
+
+    if file:
+        try:
+            # Read image bytes directly from the Flask file storage
+            image_bytes = file.read()
+            
+            # Call your OCR engine logic
+            data = process_receipt_image(image_bytes)
+            
+            if not data:
+                return jsonify({"error": "OCR could not detect text"}), 422
+
+            # Return the auto-generated expense data
+            return jsonify({
+                "message": "Receipt scanned successfully",
+                "data": data
+            }), 200
+            
+        except Exception as e:
+            return jsonify({"error": str(e)}), 500
 
 
 @app.route("/get-manager", methods=["GET"])
