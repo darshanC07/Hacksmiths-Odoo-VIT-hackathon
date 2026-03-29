@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { addMember, getManagers, getCompanyMembers } from '../../Global Api/globalApi';
+import ApprovalRulesModal from './ApprovalRulesModal';
 import './Dashboard.css'; // Inheriting layout styles
 import './Users.css'; // Users specific styles
 
@@ -156,6 +157,7 @@ const AdminUsers: React.FC = () => {
     fetchUsers();
   }, []);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [editingUser, setEditingUser] = useState<any>(null);
   const [managersList, setManagersList] = useState<any[]>([]);
 
   // Form State
@@ -324,7 +326,7 @@ const AdminUsers: React.FC = () => {
                         </button>
                       </td>
                       <td>
-                        <button className="action-btn">Edit</button>
+                        <button className="action-btn" onClick={() => setEditingUser(user)}>Edit</button>
                         <button className="action-btn delete">Delete</button>
                       </td>
                     </tr>
@@ -425,6 +427,15 @@ const AdminUsers: React.FC = () => {
             </form>
           </div>
         </div>
+      )}
+
+      {/* Edit Approval Rules Modal */}
+      {editingUser && (
+        <ApprovalRulesModal 
+          user={editingUser} 
+          allUsers={users} 
+          onClose={() => setEditingUser(null)} 
+        />
       )}
     </div>
   );

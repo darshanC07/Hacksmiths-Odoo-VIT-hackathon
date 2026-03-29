@@ -71,6 +71,20 @@ export const addMember = async (data) => {
   }
 };
 
+export const saveApprovalRules = async (data) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/approval-rules`,
+      data,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Save approval rules failed:", err);
+    throw err;
+  }
+};
+
 // ─── Employee: Expenses ──────────────────────────────────────────────────────
 
 export const submitExpense = async (data) => {
