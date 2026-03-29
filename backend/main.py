@@ -129,5 +129,65 @@ def login():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+
+@app.route("/get-manager", methods=["GET"])
+def get_manager():
+    company = request.args.get("company").upper()
+    try:
+        managers = ref.child(company).child("manager").get()
+        if not managers:
+            return jsonify({"error": "No managers found for this company","data" : []}), 404
+        
+        manager_list = []
+        for manager_id, manager_info in managers.items():
+            manager_list.append({
+                "uid": manager_info.get("uid"),
+                "name": manager_info.get("name"),
+                "email": manager_info.get("email")
+            })
+        return jsonify({"message": "Managers retrieved successfully", "data": manager_list}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+
+@app.route("/add-member", methods=["POST"])
+def add_member():
+    data = request.get_json()
+    email = data.get("email")
+    name = data.get("name")
+    role = data.get("role")
+    company = data.get("company").upper()
+    manager_uid = data.get("manager_uid") if role == "employee" else None
+    
+    password = urandom(16).hex()  
+    
+    try:
+        user = auth.create_user(
+            email=email,
+            password=password
+        )
+        print(f"Successfully created new user: {user.uid}")
+        if role == "employee":
+            employee_data = {
+                "email": email,
+                "uid": user.uid,
+                "name": name,
+                "manager_uid": manager_uid
+            }
+            
+            ref.child(company).child(role).child(user.uid).set(employee_data)
+        
+        elif role == "manager":
+            manager_data = {
+                "email": email,
+                "uid": user.uid,
+                "name": name,
+            }
+            ref.child(company).child(role).child(user.uid).set(manager_data)
+            
+        return jsonify({"message": f"{role.upper()} created successfully", "uid": user.uid}), 201
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 if __name__ == "__main__":
     app.run(debug=True)
