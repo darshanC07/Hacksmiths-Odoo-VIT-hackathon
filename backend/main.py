@@ -317,13 +317,21 @@ def get_company_members():
 @app.route("/reimbursement-req", methods=["GET"])
 def get_reimbursement_requests():
     company = request.args.get("company").upper()
-    manager_uid = request.args.get("manager")
+    manager_uid = request.args.get("manager") if request.args.get("manager") else None
+    employee_uid = request.args.get("employee") if request.args.get("employee") else None
+    
     try:
-        reimbursement_ids = ref.child(company).child("manager").child(manager_uid).child("reimbursements_req").get() or {}
+        if employee_uid:
+            reimbursement_ids = ref.child(company).child("employee").child(employee_uid).child("reimbursements").get() or {}
+        else:
+            reimbursement_ids = ref.child(company).child("manager").child(manager_uid).child("reimbursements_req").get() or {}
         
         reimbursements = []
         if not reimbursement_ids:
-            return jsonify({"message": "No reimbursement requests found for this manager", "data": []}), 200
+            if employee_uid:
+                return jsonify({"message": "No reimbursement requests found for this employee", "data": []}), 200
+            else:
+                return jsonify({"message": "No reimbursement requests found for this manager", "data": []}), 200
         
         for req_id in reimbursement_ids.values():
             req_info = ref.child(company).child("reimbursements").child(req_id).get()
@@ -331,6 +339,7 @@ def get_reimbursement_requests():
                 reimbursements.append({
                     "id": req_id,
                     "employee_uid": req_info.get("employee_uid"),
+                    "approver_uid": req_info.get("approver_uid"),
                     "amount": req_info.get("amount"),
                     "date": req_info.get("date"),
                     "currency": req_info.get("currency"),
@@ -344,6 +353,8 @@ def get_reimbursement_requests():
         return jsonify({"message": "Reimbursement requests retrieved successfully", "data": reimbursements}), 200
     except Exception as e:
         return jsonify({"error": str(e)}), 400
+
+
 
 if __name__ == "__main__":
     app.run(debug=True)
