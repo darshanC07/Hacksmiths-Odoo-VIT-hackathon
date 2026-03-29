@@ -1,14 +1,29 @@
 import axios from "axios";
 
-export const BASE_URL = "";
+export const BASE_URL = "https://30vkdstn-5000.inc1.devtunnels.ms"; // <-- Change this to your friend's exact IP or tunnel URL
+// export const BASE_URL = "http://127.0.0.1:5000"; // 
 
 // ─── Auth ───────────────────────────────────────────────────────────────────
 
-export const loginUser = async (email, password, role) => {
+export const registerAdmin = async (data) => {
+  try {
+    const response = await axios.post(
+      `${BASE_URL}/admin-register`,
+      data,
+      { headers: { "Content-Type": "application/json" } }
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Admin register failed:", err);
+    throw err;
+  }
+};
+
+export const loginUser = async (data) => {
   try {
     const response = await axios.post(
       `${BASE_URL}/login`,
-      { email, password, role },
+      data,
       { headers: { "Content-Type": "application/json" } }
     );
     return response.data;
@@ -18,16 +33,40 @@ export const loginUser = async (email, password, role) => {
   }
 };
 
-export const signupUser = async (data) => {
+export const getManagers = async (company) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/get-manager?company=${company}`
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to fetch managers:", err);
+    throw err;
+  }
+};
+
+export const getCompanyMembers = async (company) => {
+  try {
+    const response = await axios.get(
+      `${BASE_URL}/get-company-members?company=${company}`
+    );
+    return response.data;
+  } catch (err) {
+    console.error("Failed to fetch company members:", err);
+    throw err;
+  }
+};
+
+export const addMember = async (data) => {
   try {
     const response = await axios.post(
-      `${BASE_URL}/signup`,
+      `${BASE_URL}/add-member`,
       data,
       { headers: { "Content-Type": "application/json" } }
     );
     return response.data;
   } catch (err) {
-    console.error("Signup failed:", err);
+    console.error("Add member failed:", err);
     throw err;
   }
 };
