@@ -370,12 +370,21 @@ def get_reimbursement_requests():
             else:
                 return jsonify({"message": "No reimbursement requests found for this manager", "data": []}), 200
         
+        employee_names = {}
+        
         for req_id in reimbursement_ids.values():
             req_info = ref.child(company).child("reimbursements").child(req_id).get()
             if req_info:
+                emp_uid = req_info.get("employee_uid")
+                
+                if emp_uid and emp_uid not in employee_names:
+                    emp_data = ref.child(company).child("employee").child(emp_uid).get()
+                    employee_names[emp_uid] = emp_data.get("name", "Unknown Employee") if emp_data else "Unknown Employee"
+
                 reimbursements.append({
                     "id": req_id,
-                    "employee_uid": req_info.get("employee_uid"),
+                    "employee_uid": emp_uid,
+                    "employee_name": employee_names.get(emp_uid), 
                     "approver_uid": req_info.get("approver_uid"),
                     "amount": req_info.get("amount"),
                     "date": req_info.get("date"),
@@ -391,7 +400,25 @@ def get_reimbursement_requests():
     except Exception as e:
         return jsonify({"error": str(e)}), 400
 
+@app.route("/update-status", methods=["POST"])
+def update_reimbursement_status():
+    """Updates the status of a specific reimbursement request (Approve/Reject)"""
+    data = request.get_json()
+    company = data.get("company").upper()
+    req_id = data.get("request_id")
+    new_status = data.get("status").lower() # stores as 'approved' or 'rejected'
 
+    if not company or not req_id or not new_status:
+        return jsonify({"error": "Missing required fields"}), 400
+
+    try:
+        # Update the status directly in the reimbursements node
+        ref.child(company).child("reimbursements").child(req_id).update({
+            "status": new_status
+        })
+        return jsonify({"message": f"Status successfully updated to {new_status}"}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 if __name__ == "__main__":
     app.run(debug=True)
