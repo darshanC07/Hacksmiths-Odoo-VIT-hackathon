@@ -167,6 +167,47 @@ def scan_receipt():
             
         except Exception as e:
             return jsonify({"error": str(e)}), 500
+        
+@app.route("/approval-rules", methods=["POST"])
+def create_approval_rule():
+    """
+    Saves approval rules to: 
+    ETHDC/employee/{user_uid}/{user_uid}/approval_rules
+    """
+    data = request.get_json()
+    
+    user_uid = data.get("user_uid") 
+    company = "ETHDC" 
+
+    if not user_uid:
+        return jsonify({"error": "user_uid is required"}), 400
+
+    try:
+        # Prepare the Approval Rule data
+        rule_data = {
+            "description": data.get("description", "Approval rule for expenses"),
+            "is_manager_approver": data.get("is_manager_approver", False),
+            "approvers": data.get("approvers", []),
+            "min_approval_percentage": data.get("min_approval_percentage", 0),
+            "updated_at": "2026-03-29"
+        }
+
+        target_ref = ref.child(company)\
+                        .child("employee")\
+                        .child(user_uid)\
+                        .child(user_uid)\
+                        .child("approval_rules")
+        
+        target_ref.set(rule_data)
+
+        return jsonify({
+            "status": "success",
+            "message": "Rules nested under UID sub-folder",
+            "full_path": f"{company}/employee/{user_uid}/{user_uid}/approval_rules"
+        }), 201
+
+    except Exception as e:
+        return jsonify({"error": str(e)}), 500
 
 
 @app.route("/get-manager", methods=["GET"])
