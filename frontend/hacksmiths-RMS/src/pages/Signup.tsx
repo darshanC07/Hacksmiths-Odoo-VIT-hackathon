@@ -1,8 +1,14 @@
-import { useState, ChangeEvent, FormEvent } from 'react';
+import { useState, useEffect, ChangeEvent, FormEvent } from 'react';
 import { useNavigate } from 'react-router-dom';
 import './Signup.css';
 
 // ─── Types ────────────────────────────────────────────────────────────────────
+
+interface CountryOption {
+  name: string;        // common name, e.g. "India"
+  currency: string;    // currency code, e.g. "INR"
+  currencyName: string; // full name, e.g. "Indian rupee"
+}
 
 interface FormData {
   fullName: string;
@@ -10,6 +16,8 @@ interface FormData {
   password: string;
   confirmPassword: string;
   companyName: string;
+  country: string;
+  currency: string;
 }
 
 interface FormErrors {
@@ -18,6 +26,7 @@ interface FormErrors {
   password?: string;
   confirmPassword?: string;
   companyName?: string;
+  country?: string;
 }
 
 // ─── Initial state ────────────────────────────────────────────────────────────
@@ -28,6 +37,8 @@ const initialForm: FormData = {
   password: '',
   confirmPassword: '',
   companyName: '',
+  country: '',
+  currency: '',
 };
 
 // ─── Component ────────────────────────────────────────────────────────────────
@@ -38,7 +49,43 @@ const Signup: React.FC = () => {
   const [showPass, setShowPass] = useState<boolean>(false);
   const [showConfirm, setShowConfirm] = useState<boolean>(false);
   const [submitted, setSubmitted] = useState<boolean>(false);
+
+  // Country state
+  const [countries, setCountries] = useState<CountryOption[]>([]);
+  const [countriesLoading, setCountriesLoading] = useState<boolean>(true);
+
   const navigate = useNavigate();
+
+  // ── Fetch countries on mount ─────────────────────────────────────────────────
+  useEffect(() => {
+    const fetchCountries = async () => {
+      try {
+        const res = await fetch('https://restcountries.com/v3.1/all?fields=name,currencies');
+        const data = await res.json();
+
+        const parsed: CountryOption[] = data
+          .filter((c: any) => c.currencies && Object.keys(c.currencies).length > 0)
+          .map((c: any) => {
+            const currencyCode = Object.keys(c.currencies)[0];
+            const currencyInfo = c.currencies[currencyCode];
+            return {
+              name: c.name.common,
+              currency: currencyCode,
+              currencyName: currencyInfo?.name ?? currencyCode,
+            };
+          })
+          .sort((a: CountryOption, b: CountryOption) => a.name.localeCompare(b.name));
+
+        setCountries(parsed);
+      } catch (err) {
+        console.error('Failed to fetch countries:', err);
+      } finally {
+        setCountriesLoading(false);
+      }
+    };
+
+    fetchCountries();
+  }, []);
 
   // ── Validation ──────────────────────────────────────────────────────────────
   const validate = (): FormErrors => {
@@ -48,6 +95,7 @@ const Signup: React.FC = () => {
     if (formData.password.length < 6) errs.password = 'Password must be at least 6 characters';
     if (formData.password !== formData.confirmPassword) errs.confirmPassword = 'Passwords do not match';
     if (!formData.companyName.trim()) errs.companyName = 'Company name is required';
+    if (!formData.country) errs.country = 'Please select a country';
     return errs;
   };
 
@@ -60,6 +108,18 @@ const Signup: React.FC = () => {
     }
   };
 
+  // When country changes → auto-fill currency
+  const handleCountryChange = (e: ChangeEvent<HTMLSelectElement>): void => {
+    const selectedName = e.target.value;
+    const found = countries.find((c) => c.name === selectedName);
+    setFormData((prev) => ({
+      ...prev,
+      country: selectedName,
+      currency: found ? found.currency : '',
+    }));
+    if (errors.country) setErrors((prev) => ({ ...prev, country: undefined }));
+  };
+
   const handleSubmit = (e: FormEvent<HTMLFormElement>): void => {
     e.preventDefault();
     const errs = validate();
@@ -67,8 +127,12 @@ const Signup: React.FC = () => {
       setErrors(errs);
       return;
     }
-    // No API call — log and show success state
-    console.log('Signup form data:', formData);
+    // No API call — log full data including country & currency
+    console.log('Signup form data:', {
+      ...formData,
+      country: formData.country,
+      currency: formData.currency,
+    });
     setSubmitted(true);
   };
 
@@ -253,6 +317,50 @@ const Signup: React.FC = () => {
             </div>
             {errors.companyName && <span className="error-msg">{errors.companyName}</span>}
           </div>
+
+          {/* Company Country */}
+          <div className={`form-group${errors.country ? ' form-group--error' : ''}`}>
+            <label htmlFor="country">Company Country</label>
+            <div className="input-wrapper select-wrapper">
+              <span className="input-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                  <circle cx="12" cy="12" r="10" />
+                  <line x1="2" y1="12" x2="22" y2="12" />
+                  <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" />
+                </svg>
+              </span>
+              <select
+                id="country"
+                name="country"
+                value={formData.country}
+                onChange={handleCountryChange}
+                disabled={countriesLoading}
+              >
+                <option value="">
+                  {countriesLoading ? 'Loading countries…' : 'Select country…'}
+                </option>
+                {countries.map((c) => (
+                  <option key={c.name} value={c.name}>
+                    {c.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+            {errors.country && <span className="error-msg">{errors.country}</span>}
+          </div>
+
+          {/* Auto-detected Currency (read-only display) */}
+          {formData.currency && (
+            <div className="currency-badge">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="12" y1="1" x2="12" y2="23" />
+                <path d="M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6" />
+              </svg>
+              <span>
+                Base currency auto-detected: <strong>{formData.currency}</strong>
+              </span>
+            </div>
+          )}
 
           <button id="create-account-btn" type="submit" className="submit-btn">
             Create Account

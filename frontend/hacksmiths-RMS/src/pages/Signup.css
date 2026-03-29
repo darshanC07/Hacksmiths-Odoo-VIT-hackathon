@@ -256,6 +256,35 @@
   font-weight: 500;
 }
 
+/* ---------- Currency badge ---------- */
+.currency-badge {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 14px;
+  background: #f3f0ff;
+  border: 1px solid #d8d1f7;
+  border-radius: 10px;
+  font-size: 0.83rem;
+  color: #4b4580;
+}
+.currency-badge svg {
+  width: 15px;
+  height: 15px;
+  stroke: #6C5CE7;
+  flex-shrink: 0;
+}
+.currency-badge strong {
+  color: #6C5CE7;
+  font-weight: 700;
+}
+
+/* ---------- Disabled select ---------- */
+.input-wrapper select:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
 /* ---------- Submit button ---------- */
 .submit-btn {
   width: 100%;
