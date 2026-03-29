@@ -286,5 +286,64 @@ def submit_reimbursement():
         return jsonify({"error": str(e)}), 400
 
 
+@app.route("/get-company-members", methods=["GET"])
+def get_company_members():
+    company = request.args.get("company").upper()
+    try:
+        employees = ref.child(company).child("employee").get() or {}
+        managers = ref.child(company).child("manager").get() or {}
+        
+        employee_list = []
+        for emp_id, emp_info in employees.items():
+            employee_list.append({
+                "uid": emp_info.get("uid"),
+                "name": emp_info.get("name"),
+                "email": emp_info.get("email"),
+            })
+        
+        manager_list = []
+        for mgr_id, mgr_info in managers.items():
+            manager_list.append({
+                "uid": mgr_info.get("uid"),
+                "name": mgr_info.get("name"),
+                "email": mgr_info.get("email"),
+            })
+        
+        
+        return jsonify({"message": "Company members retrieved successfully", "data": {"employees" : employee_list, "managers" : manager_list}}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
+@app.route("/reimbursement-req", methods=["GET"])
+def get_reimbursement_requests():
+    company = request.args.get("company").upper()
+    manager_uid = request.args.get("manager")
+    try:
+        reimbursement_ids = ref.child(company).child("manager").child(manager_uid).child("reimbursements_req").get() or {}
+        
+        reimbursements = []
+        if not reimbursement_ids:
+            return jsonify({"message": "No reimbursement requests found for this manager", "data": []}), 200
+        
+        for req_id in reimbursement_ids.values():
+            req_info = ref.child(company).child("reimbursements").child(req_id).get()
+            if req_info:
+                reimbursements.append({
+                    "id": req_id,
+                    "employee_uid": req_info.get("employee_uid"),
+                    "amount": req_info.get("amount"),
+                    "date": req_info.get("date"),
+                    "currency": req_info.get("currency"),
+                    "category": req_info.get("category"),
+                    "paid_by": req_info.get("paid_by"),
+                    "title": req_info.get("title"),
+                    "description": req_info.get("description"),
+                    "status": req_info.get("status")
+                })
+        
+        return jsonify({"message": "Reimbursement requests retrieved successfully", "data": reimbursements}), 200
+    except Exception as e:
+        return jsonify({"error": str(e)}), 400
+
 if __name__ == "__main__":
     app.run(debug=True)
