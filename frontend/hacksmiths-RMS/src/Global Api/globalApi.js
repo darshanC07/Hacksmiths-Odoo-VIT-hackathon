@@ -1,6 +1,6 @@
 import axios from "axios";
 
-export const BASE_URL = "";
+export const BASE_URL = "https://30vkdstn-5000.inc1.devtunnels.ms";
 
 // ─── Auth ───────────────────────────────────────────────────────────────────
 
